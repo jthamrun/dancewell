@@ -38,7 +38,7 @@ class _BodyPageState extends ConsumerState<BodyPage> {
     super.initState();
   }
 
-  Positioned placeBodyPart(double top, double left, String bodyPart) {
+  Widget placeBodyPart(double top, double left, String bodyPart) {
     return Positioned(
         top: top, // Adjust the position as needed
         left: left,
@@ -102,11 +102,13 @@ class _BodyPageState extends ConsumerState<BodyPage> {
             child: SingleChildScrollView(
               child: Stack(
                 children: <Widget>[
-                  SizedBox(
-                    height: height * 0.7,
-                    child: Image.asset(
-                      'assets/human_body.jpg',
-                      fit: BoxFit.fitHeight,
+                  Center(
+                    child: SizedBox(
+                      height: height * 0.8,
+                      child: Image.asset(
+                        'assets/human_body.jpg',
+                        fit: BoxFit.fitHeight,
+                      ),
                     ),
                   ),
                   // Overlay body parts text

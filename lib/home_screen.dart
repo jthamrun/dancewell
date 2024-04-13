@@ -52,10 +52,7 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(fontSize: 18),
                 ),
                 SizedBox(height: 16),
-                Text(
-                  'Immerse yourself in 3D interactive models for a comprehensive grasp of your injuries.',
-                  style: TextStyle(fontSize: 18),
-                ),
+
               ],
             ),
           ),
