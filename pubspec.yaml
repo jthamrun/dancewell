@@ -43,6 +43,7 @@ dependencies:
   flutter_markdown: ^0.6.22+1
   youtube_player_flutter: ^9.0.0
   flutter_launcher_icons: ^0.13.1
+  camera: ^0.10.5+9
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +88,8 @@ flutter:
   assets:
     - assets/
     - assets/.env
+    - assets/images/homescreenimage.png
+    - assets/images/preassessment.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

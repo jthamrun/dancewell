@@ -1,42 +1,49 @@
 import 'dart:convert';
 import 'dart:io';
 
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dancewell/models/history.dart';
 import 'package:dancewell/moreSymptomScreen.dart';
 import 'package:dancewell/services/sharedPrefService.dart';
 
+
 class BodyPage extends ConsumerStatefulWidget {
   const BodyPage({
     Key? key,
   }) : super(key: key);
 
+
   @override
   ConsumerState<BodyPage> createState() => _BodyPageState();
 }
 
+
 class _BodyPageState extends ConsumerState<BodyPage> {
   Map bodyParts = {
-    'Shoulder': {'height': 0.1, 'width': 0.15},
-    'Cervical spine': {'height': 0.08, 'width': 0.65},
-    'Elbow': {'height': 0.12, 'width': 0.75},
-    'Thoracic spine': {'height': 0.23, 'width': 0.58},
-    'Lumbar spine': {'height': 0.28, 'width': 0.65},
-    'SI joint': {'height': 0.35, 'width': 0.7},
-    'Hip': {'height': 0.3, 'width': 0.15},
-    'Thigh': {'height': 0.43, 'width': 0.2},
-    'Knee': {'height': 0.45, 'width': 0.7},
-    'Lower leg': {'height': 0.55, 'width': 0.2},
-    'Ankle': {'height': 0.65, 'width': 0.2},
-    'Foot/Toes': {'height': 0.63, 'width': 0.75}
+    'Shoulder': {'height': 0.13, 'width': 0.16},
+    'Cervical spine': {'height': 0.115, 'width': 0.68},
+    'Elbow': {'height': 0.15, 'width': 0.85},
+    'Thoracic spine': {'height': 0.248, 'width': 0.62},
+    'Lumbar spine': {'height': 0.32, 'width': 0.66},
+    'SI joint': {'height': 0.37, 'width': 0.7},
+    'Hip': {'height': 0.36, 'width': 0.15},
+    'Thigh': {'height': 0.5, 'width': 0.2},
+    'Knee': {'height': 0.525, 'width': 0.75},
+    'Lower leg': {'height': 0.65, 'width': 0.18},
+    'Ankle': {'height': 0.74, 'width': 0.23},
+    'Foot': {'height': 0.715, 'width': 0.82},
+    'Other': {'height': 0.715, 'width': 0.55}
   };
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
+
 
   Widget placeBodyPart(double top, double left, String bodyPart) {
     return Positioned(
@@ -47,9 +54,9 @@ class _BodyPageState extends ConsumerState<BodyPage> {
             children: [
               Card(
                   child: Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: Text(bodyPart),
-              ))
+                    padding: const EdgeInsets.all(3.0),
+                    child: Text(bodyPart),
+                  ))
             ],
           ),
           onTap: () {
@@ -58,43 +65,43 @@ class _BodyPageState extends ConsumerState<BodyPage> {
         ));
   }
 
+
   Future<void> goToMoreSymptomPage(String organ) async {
     BodyHistory bodyHistory = BodyHistory(name: organ, date: DateTime.now());
     List<String>? bodyHistoryList =
-        await SharedPrefService.getStringList('bodyHistory');
+    await SharedPrefService.getStringList('bodyHistory');
     if (bodyHistoryList == null) {
       bodyHistoryList = [];
     }
+
 
     bodyHistoryList.add(bodyHistory.toJson());
     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => MoreSymptomPage(
-                organ: organ,
-              )),
+            organ: organ,
+          )
+      ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
 
+
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        backgroundColor: const Color.fromRGBO(183, 76, 174, 1.0),
-        toolbarHeight: 100,
-        title: SizedBox(
-          height: 100,
-          width: double.infinity,
-          child: Image.asset(
-            'assets/logo.png',
-            fit: BoxFit.contain,
-          ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
         ),
+        title: Text('DanceWell', style: TextStyle(color: Colors.black)),
+        centerTitle: true,
+        backgroundColor: Colors.white,
       ),
       body: Column(
         children: [

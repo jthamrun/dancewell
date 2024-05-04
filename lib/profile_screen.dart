@@ -42,20 +42,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          backgroundColor: const Color.fromRGBO(183, 76, 174, 1.0),
-          toolbarHeight: 100,
-          // Set the desired height
-          title: Container(
-            height: 100, // Adjust the height as needed
-            width: double.infinity, // Set width to occupy the full space
-            child: Image.asset(
-              'assets/profile.png',
-              fit: BoxFit
-                  .contain, // Use 'contain' for fitting the image within the container
-            ),
-          ),
+          title: Text('DanceWell', style: TextStyle(color: Colors.black)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
         ),
         body: assessmentMap.isNotEmpty
             ? ListView.builder(

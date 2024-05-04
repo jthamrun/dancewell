@@ -62,20 +62,9 @@ class _HistoryInfoPageState extends State<HistoryInfoPage> {
           },
         ),
         appBar: AppBar(
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          backgroundColor: const Color.fromRGBO(183, 76, 174, 1.0),
-          toolbarHeight: 100,
-          // Set the desired height
-          title: SizedBox(
-            height: 100, // Adjust the height as needed
-            width: double.infinity, // Set width to occupy the full space
-            child: Image.asset(
-              'assets/logo.png',
-              fit: BoxFit
-                  .contain, // Use 'contain' for fitting the image within the container
-            ),
-          ),
+          title: Text('DanceWell', style: TextStyle(color: Colors.black)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
         ),
         body: Padding(
           padding: const EdgeInsets.all(12.0),

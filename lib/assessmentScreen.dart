@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import "package:dancewell/models/videos.dart";
 
+
+// The AssessmentPage widget: A StatefulWidget that takes responses and an organ as input.
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({
     Key? key,
@@ -20,31 +23,31 @@ class AssessmentPage extends StatefulWidget {
   final List responses;
   final String organ;
 
+
   @override
   State<AssessmentPage> createState() => _AssessmentPageState();
 }
 
+
 class _AssessmentPageState extends State<AssessmentPage> {
+  // Initialization of a generative model with an API key.
   final model = GenerativeModel(
       model: 'gemini-pro', apiKey: dotenv.env['OPENAI_API_KEY']!);
   String? result;
 
+
+  // initState method: Called when this object is inserted into the tree.
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    /*
-    _openAI = OpenAI.instance.build(
-      token: dotenv.env['OPENAI_API_KEY'],
-      baseOption: HttpSetup(
-        receiveTimeout: const Duration(seconds: 30),
-      ),
-    );
-    */
+
 
     geminiFunctionCalling();
   }
 
+
+  // saveAssessment method: Saves the assessment result into local storage.
   Future<void> saveAssessment() async {
     Map<String, dynamic> assessmentMap = {};
     String key = 'assessment';
@@ -52,82 +55,64 @@ class _AssessmentPageState extends State<AssessmentPage> {
     var formatter = new DateFormat('yyyy-MM-dd hh:mm a');
     String formattedDate = formatter.format(now);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Retrieve any existing assessment data.
     if (prefs.containsKey(key)) {
       assessmentMap = jsonDecode(prefs.getString(key)!);
     }
+
+
+    // Update the assessment map with new data and save it.
     assessmentMap[formattedDate] = {'organ': widget.organ, 'result': result};
+
 
     String info = jsonEncode(assessmentMap);
     await prefs.setString(key, info);
     print(prefs.getString(key)!);
   }
 
-  ///parameter name is require
-  /*
-  void gptFunctionCalling() async {
-    String systemPrompt =
-        'act as a doctor. Provide an assessment of my symptoms and give me some advices';
-    String userPrompt =
-        'These are the response for the questions: ${widget.responses}';
-    final request = ChatCompleteText(
-      messages: [
-        Messages(
-          role: Role.system,
-          content: systemPrompt,
-        ),
-        Messages(
-          role: Role.user,
-          content: userPrompt,
-        ),
-      ],
-      maxToken: 2000,
-      model: GptTurbo0631Model(),
-    );
 
-    ChatCTResponse? response = await gemini.onChatCompletion(request: request);
-    for (var element in response!.choices) {
-      String? message = element.message?.content;
-      // print(stringList);
-      setState(() {
-        result = message!;
-      });
-    }
-  }
-*/
-
+  // geminiFunctionCalling method: Communicates with the Gemini model and sets the response.
   Future<void> geminiFunctionCalling() async {
+    // Start a chat with the generative AI model and send a message.
     final chat = model.startChat(history: [
       Content.text(
           'These are the response for the questions: ${widget.responses}'),
       Content.model([TextPart('Hello, How can I help you?')]),
     ]);
 
+
+    // Ask AI to assess and give advice
     var message =
-        'act as a doctor. Provide an assessment of my symptoms and give me some advices';
+        'act as a doctor specifically for dancers. Provide an assessment of my symptoms and give me some advices';
     var content = Content.text(message);
     final response = await chat.sendMessage(content);
 
+
+    // Update the result state with the model's response.
     setState(() {
       result = response.text;
     });
   }
 
+
+  // build method: Describes the part of the user interface represented by this widget.
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        //Pop until Home page
+        // Handle the back button press by saving the assessment and navigating back.
         saveAssessment();
         Navigator.pop(context);
         Navigator.pop(context);
         return false;
       },
       child: Scaffold(
+        // Floating action button: Opens a bottom sheet with a YouTube player for a video.
           floatingActionButton: FloatingActionButton(
             child: const Icon(Icons.play_arrow),
             onPressed: () async {
               var randomVideoIndex =
-                  Random().nextInt(videos[widget.organ]!.length);
+              Random().nextInt(videos[widget.organ]!.length);
               YoutubePlayerController _controller = YoutubePlayerController(
                 initialVideoId: videos[widget.organ]![randomVideoIndex],
                 flags: YoutubePlayerFlags(
@@ -136,6 +121,8 @@ class _AssessmentPageState extends State<AssessmentPage> {
                 ),
               );
 
+
+              // Show modal bottom sheet with a YouTube player.
               await showModalBottomSheet(
                   context: context,
                   builder: (context) {
@@ -152,38 +139,33 @@ class _AssessmentPageState extends State<AssessmentPage> {
             },
           ),
           appBar: AppBar(
-            automaticallyImplyLeading: false,
-            elevation: 0,
-            backgroundColor: const Color.fromRGBO(183, 76, 174, 1.0),
-            toolbarHeight: 100,
-            // Set the desired height
-            title: SizedBox(
-              height: 100, // Adjust the height as needed
-              width: double.infinity, // Set width to occupy the full space
-              child: Image.asset(
-                'assets/logo.png',
-                fit: BoxFit
-                    .contain, // Use 'contain' for fitting the image within the container
-              ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.of(context).pop(),
             ),
+            title: Text('DanceWell', style: TextStyle(color: Colors.black)),
+            centerTitle: true,
+            backgroundColor: Colors.white,
           ),
+          // Body: If the result is available, display it inside a Markdown widget for formatted text.
+          // Otherwise, show a loading indicator.
           body: result != null
               ? Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: ListView(
-                    children: [
-                      MarkdownBody(
-                        data: result!,
-                      ),
-                    ],
-                  ),
-                )
+            padding: const EdgeInsets.all(12.0),
+            child: ListView(
+              children: [
+                MarkdownBody(
+                  data: result!,
+                ),
+              ],
+            ),
+          )
               : const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [CircularProgressIndicator()],
-                  ),
-                )),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [CircularProgressIndicator()],
+            ),
+          )),
     );
   }
 }

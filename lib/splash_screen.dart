@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'route.dart';
 
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
+
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
+
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
@@ -14,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     init();
   }
+
 
   Future<void> init() async {
     await Future.delayed(const Duration(seconds: 2)).then((value) {
@@ -25,16 +29,18 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
+
   @override
   void setState(fn) {
     if (mounted) super.setState(fn);
   }
 
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color.fromRGBO(183, 76, 174, 1.0),
+        backgroundColor: Colors.white,
         body: Stack(
           alignment: Alignment.center,
           children: [
@@ -47,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   const Spacer(),
                   const Text(
                     textAlign: TextAlign.center,
-                    'Injury4Dancer Assistant',
+                    'DanceWell',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
                   ),
                   const Spacer(),
