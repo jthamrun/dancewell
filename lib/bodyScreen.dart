@@ -8,6 +8,8 @@ import 'package:dancewell/models/history.dart';
 import 'package:dancewell/moreSymptomScreen.dart';
 import 'package:dancewell/services/sharedPrefService.dart';
 
+import 'camera_page.dart';
+
 
 class BodyPage extends ConsumerStatefulWidget {
   const BodyPage({
@@ -60,6 +62,12 @@ class _BodyPageState extends ConsumerState<BodyPage> {
             ],
           ),
           onTap: () {
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => CameraPage(),
+            //   ),
+            // );
             goToMoreSymptomPage(bodyPart);
           },
         ));

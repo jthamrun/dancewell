@@ -171,7 +171,7 @@ class _MoreSymptomPageState extends State<MoreSymptomPage> {
                      Navigator.push(
                        context,
                        MaterialPageRoute(
-                         builder: (context) => CameraPage(cameras: [],),
+                         builder: (context) => CameraPage(),
                        ),
                      );
                    },
