@@ -171,7 +171,9 @@ class _MoreSymptomPageState extends State<MoreSymptomPage> {
                      Navigator.push(
                        context,
                        MaterialPageRoute(
-                         builder: (context) => CameraPage(),
+                         builder: (context) => CameraPage(
+                             responses: allResponse, organ: widget.organ
+                         ),
                        ),
                      );
                    },

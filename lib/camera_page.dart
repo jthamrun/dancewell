@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,7 +13,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 class CameraPage extends StatefulWidget {
-  const CameraPage({Key? key}) : super(key: key);
+  const CameraPage({
+    Key? key,
+    required this.responses,
+    required this.organ,
+}) : super(key: key);
+  final List responses;
+  final String organ;
 
   @override
   State<CameraPage> createState() => _CameraPageState();
@@ -54,9 +62,11 @@ class _CameraPageState extends State<CameraPage> {
   // }
 
   late final model = GenerativeModel(
-      apiKey: dotenv.env['OPENAI_API_KEY']!, model: 'gemini-pro');
-  List questions = [];
-  List<String> responses = [];
+      apiKey: dotenv.env['OPENAI_API_KEY']!, model: 'gemini-pro-vision');
+  String textResponse = '';
+  String diagnosis = '';
+  String advice = '';
+  int diagnoseButtonClicked = 0;
 
 
   @override
@@ -66,7 +76,7 @@ class _CameraPageState extends State<CameraPage> {
 
 
     // gptFunctionCalling();
-    geminiFunctionCalling();
+    //geminiFunctionCalling();
   }
 
 
@@ -77,10 +87,49 @@ class _CameraPageState extends State<CameraPage> {
   }
   // Generate AI questions and responses
   void geminiFunctionCalling() async {
+    setState(() {
+      diagnoseButtonClicked = 1;
+    });
     final prompt = TextPart("Act as a doctor specifically for dancers. Analyze the image, provide the diagnosis of my injury and advice.\n"
-        "Please return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}");
+        "Please return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
 
-    final imagePart = [DataPart(_image), await photo.readAsBytes()];
+        "Take note of the following answers to some questions to check for symptoms of the injury: ${widget.responses}"
+    );
+
+    final imageBytes = await _image?.readAsBytes();
+    if (imageBytes != null) {
+      final imagePart = [DataPart('image/jpeg', await imageBytes)];
+
+      final response = await model.generateContent([
+        Content.multi([prompt, ...imagePart])
+      ]);
+
+      if (response != null) {
+        textResponse = response.text!;
+        print(textResponse);
+
+        try {
+          final jsonResponse = jsonDecode(textResponse);
+          if (jsonResponse is Map<String, dynamic>) {
+            setState(() {
+              diagnosis = jsonResponse['diagnosis'];
+              advice = jsonResponse['advice'];
+            });
+            print(jsonResponse['diagnosis']);
+            print(jsonResponse['advice']);
+          } else {
+            print("Warning: Response may not be in expected JSON format");
+          }
+        } on FormatException {
+          print("Warning: Could not parse response as JSON");
+        }
+      } else {
+        print("Error: Could not receive response from the model");
+      }
+    } else {
+      print("Error reading file when trying to send data to google gen AI");
+    }
+
 
     // String systemPrompt =
     //     'act as a doctor specifically for dancers. Provide an assessment of my injury and give me some advices';
@@ -172,10 +221,29 @@ class _CameraPageState extends State<CameraPage> {
                           color: Colors.white70, fontWeight: FontWeight.bold
                       )
                   ),
-                  onPressed: () {
-
-                  }
+                  onPressed: geminiFunctionCalling
               ),
+              diagnosis != '' ?
+                  Center(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 30,),
+                        Text('Diagnosis: $diagnosis'),
+                        SizedBox(height: 20,),
+                        Text('AdviceL $advice')
+                      ],
+                    ),
+                  )
+              : diagnoseButtonClicked == 0 ?
+                  Container() :
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 30,),
+                    CircularProgressIndicator()],
+                ),
+              )
             ],
           ),
         )
