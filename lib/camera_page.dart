@@ -32,8 +32,8 @@ class _CameraPageState extends State<CameraPage> {
 
   Future getImageGallery() async {
     final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80
+        source: ImageSource.gallery,
+        imageQuality: 80
     );
     setState(() {
       if (pickedFile != null) {
@@ -85,16 +85,81 @@ class _CameraPageState extends State<CameraPage> {
     // TODO: implement dispose
     super.dispose();
   }
+
   // Generate AI questions and responses
   void geminiFunctionCalling() async {
     setState(() {
       diagnoseButtonClicked = 1;
     });
-    final prompt = TextPart("Act as a doctor specifically for dancers. Analyze the image, provide an assessment of my injury and give me some advice.\n"
-        "Take note of the following answers to some questions to check for symptoms of the injury: ${widget.responses}"
-        'Return the assessment and advice in a JSON object. The length of the assessment should be 100 words and advice should be 150 words.'
-        "DO NOT type anything at the beginning or end of the json. The json should look like {'assessment': <assessment>, 'advice': <advice>}"
-    //"Please only return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
+    final prompt = TextPart(
+        "Act as a doctor specifically for dancers. Analyze the image, provide an assessment of my injury.\n"
+            "Take note of the following answers to some questions to check for symptoms of the injury: ${widget
+            .responses}"
+      //'Return the assessment and advice in a JSON object. The length of the assessment should be 100 words and advice should be 150 words.'
+      // "DO NOT type anything at the beginning or end of the json. The json should look like {'assessment': <assessment>, 'advice': <advice>}"
+      //"Please only return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
+    );
+
+    final imageBytes = await _image?.readAsBytes();
+    if (imageBytes != null) {
+      final imagePart = [DataPart('image/jpeg', await imageBytes)];
+
+      final response = await model.generateContent([
+        Content.multi([prompt, ...imagePart])
+      ]);
+
+      if (response != null) {
+        textResponse = response.text!;
+        //print(textResponse);
+        setState(() {
+          diagnosis = textResponse;
+        });
+        getAdvice();
+        print("Getting Advice...");
+
+        // String cleanedResponse = response.text!.replaceAll('```json', '');
+        // cleanedResponse = cleanedResponse.replaceAll('```JSON', '').trim();
+        // cleanedResponse = cleanedResponse.replaceAll('```', '').trim();
+        // cleanedResponse = cleanedResponse.replaceAll(r'\u00A0', '').trim();
+        // print(cleanedResponse);
+        // Map<String, dynamic> output = jsonDecode(cleanedResponse);
+        //print(output);
+
+        //
+        // Map<String, dynamic> output = jsonDecode(cleanedResponse);
+        //print(output);
+
+        // setState(() {
+        //   diagnosis = output['assessment'];
+        //   advice = output['advice'];
+        // });
+
+        //final jsonResponse = jsonDecode(textResponse);
+        // if (jsonResponse is Map<String, dynamic>) {
+        //   setState(() {
+        //     diagnosis = jsonResponse['diagnosis'];
+        //     advice = jsonResponse['advice'];
+        //   });
+        //   print(jsonResponse['diagnosis']);
+        //   print(jsonResponse['advice']);
+        //
+        // } else {
+        //   print("Warning: Response may not be in expected JSON format");
+        // }
+      } else {
+        print("Error: Could not receive response from the model");
+      }
+    } else {
+      print("Error reading file when trying to send data to google gen AI");
+    }
+  }
+
+  void getAdvice() async {
+    final prompt = TextPart(
+        "Suggest treatment plan or an advice based on this info $diagnosis"
+      //'Return the assessment and advice in a JSON object. The length of the assessment should be 100 words and advice should be 150 words.'
+      // "DO NOT type anything at the beginning or end of the json. The json should look like {'assessment': <assessment>, 'advice': <advice>}"
+      //"Please only return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
     );
 
     final imageBytes = await _image?.readAsBytes();
@@ -108,79 +173,17 @@ class _CameraPageState extends State<CameraPage> {
       if (response != null) {
         textResponse = response.text!;
         print(textResponse);
-
-        try {
-          // setState(() {
-          //   diagnosis = textResponse;
-          // });
-          // print(diagnosis);
-
-          String cleanedResponse = response.text!.replaceAll('```json', '');
-          cleanedResponse = cleanedResponse.replaceAll('```JSON', '').trim();
-          cleanedResponse = cleanedResponse.replaceAll('```', '').trim();
-
-          Map<String, dynamic> output = jsonDecode(cleanedResponse);
-          print(output['assessment']);
-          print(output['advice']);
-
-          setState(() {
-            diagnosis = output['assessment'];
-            advice = output['advice'];
-          });
-
-          //final jsonResponse = jsonDecode(textResponse);
-          // if (jsonResponse is Map<String, dynamic>) {
-          //   setState(() {
-          //     diagnosis = jsonResponse['diagnosis'];
-          //     advice = jsonResponse['advice'];
-          //   });
-          //   print(jsonResponse['diagnosis']);
-          //   print(jsonResponse['advice']);
-          //
-          // } else {
-          //   print("Warning: Response may not be in expected JSON format");
-          // }
-        } on FormatException {
-          print("Warning: Could not parse response as JSON");
-        }
+        setState(() {
+          advice = textResponse;
+        });
       } else {
         print("Error: Could not receive response from the model");
       }
     } else {
       print("Error reading file when trying to send data to google gen AI");
     }
-
-
-    // String systemPrompt =
-    //     'act as a doctor specifically for dancers. Provide an assessment of my injury and give me some advices';
-    // String userPrompt =
-    //     'Analyze the image and provide the diagnosis of my injury as a json format'
-    //     ' to assess my health. Please only return the json file. DO NOT type '
-    //     'anything at the beginning or end of the json. The json should look like '
-    //     'this {"diagnosis":"diagnosis": <diagnosis>, "advice": <advice>}';
-    //
-    //
-    // final chat = model.startChat(history: [
-    //   Content.text(userPrompt),
-    //   Content.model([TextPart(systemPrompt)]),
-    // ]);
-    //
-    //
-    // final message = userPrompt;
-    //
-    //
-    // final response = await chat.sendMessage(Content.text(message));
-    //
-    //
-    // if (!mounted) return;
-    //
-    //
-    // setState(() {
-    //   Map<String, dynamic> result = jsonDecode(response.text!);
-    //   questions = result['questions'];
-    //   responses = List.generate(questions.length, (index) => "No");
-    // });
   }
+
 
   @override
   Widget build(BuildContext context) {
