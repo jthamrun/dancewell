@@ -90,10 +90,11 @@ class _CameraPageState extends State<CameraPage> {
     setState(() {
       diagnoseButtonClicked = 1;
     });
-    final prompt = TextPart("Act as a doctor specifically for dancers. Analyze the image, provide the diagnosis of my injury and advice.\n"
-        "Please return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
-
+    final prompt = TextPart("Act as a doctor specifically for dancers. Analyze the image, provide an assessment of my injury and give me some advice.\n"
         "Take note of the following answers to some questions to check for symptoms of the injury: ${widget.responses}"
+        'Return the assessment and advice in a JSON object. The length of the assessment should be 100 words and advice should be 150 words.'
+        "DO NOT type anything at the beginning or end of the json. The json should look like {'assessment': <assessment>, 'advice': <advice>}"
+    //"Please only return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
     );
 
     final imageBytes = await _image?.readAsBytes();
@@ -109,17 +110,36 @@ class _CameraPageState extends State<CameraPage> {
         print(textResponse);
 
         try {
-          final jsonResponse = jsonDecode(textResponse);
-          if (jsonResponse is Map<String, dynamic>) {
-            setState(() {
-              diagnosis = jsonResponse['diagnosis'];
-              advice = jsonResponse['advice'];
-            });
-            print(jsonResponse['diagnosis']);
-            print(jsonResponse['advice']);
-          } else {
-            print("Warning: Response may not be in expected JSON format");
-          }
+          // setState(() {
+          //   diagnosis = textResponse;
+          // });
+          // print(diagnosis);
+
+          String cleanedResponse = response.text!.replaceAll('```json', '');
+          cleanedResponse = cleanedResponse.replaceAll('```JSON', '').trim();
+          cleanedResponse = cleanedResponse.replaceAll('```', '').trim();
+
+          Map<String, dynamic> output = jsonDecode(cleanedResponse);
+          print(output['assessment']);
+          print(output['advice']);
+
+          setState(() {
+            diagnosis = output['assessment'];
+            advice = output['advice'];
+          });
+
+          //final jsonResponse = jsonDecode(textResponse);
+          // if (jsonResponse is Map<String, dynamic>) {
+          //   setState(() {
+          //     diagnosis = jsonResponse['diagnosis'];
+          //     advice = jsonResponse['advice'];
+          //   });
+          //   print(jsonResponse['diagnosis']);
+          //   print(jsonResponse['advice']);
+          //
+          // } else {
+          //   print("Warning: Response may not be in expected JSON format");
+          // }
         } on FormatException {
           print("Warning: Could not parse response as JSON");
         }
@@ -168,83 +188,85 @@ class _CameraPageState extends State<CameraPage> {
         appBar: AppBar(
           title: const Text("Image Picker Example"),
         ),
-        body: Center(
-          child: Column(
-            children: [
-              MaterialButton(
-                  color: Colors.blue,
-                  child: const Text(
-                      "Pick Image from Gallery",
-                      style: TextStyle(
-                          color: Colors.white70, fontWeight: FontWeight.bold
-                      )
-                  ),
-                  onPressed: () {
-                    getImageGallery();
-                  }
-              ),
-              // MaterialButton(
-              //     color: Colors.blue,
-              //     child: const Text(
-              //         "Pick Image from Camera",
-              //         style: TextStyle(
-              //             color: Colors.white70, fontWeight: FontWeight.bold
-              //         )
-              //     ),
-              //     onPressed: () {
-              //       //pickImage();
-              //     }
-              // ),
-              Container(
-                height: 200,
-                width: 300,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: [
+                MaterialButton(
+                    color: Colors.blue,
+                    child: const Text(
+                        "Pick Image from Gallery",
+                        style: TextStyle(
+                            color: Colors.white70, fontWeight: FontWeight.bold
+                        )
+                    ),
+                    onPressed: () {
+                      getImageGallery();
+                    }
                 ),
-                child: _image != null
-                  ? Image.file(
-                  _image!.absolute,
-                  fit: BoxFit.cover,
-                  )
-                  : Center(
-                  child: Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: 30,
+                // MaterialButton(
+                //     color: Colors.blue,
+                //     child: const Text(
+                //         "Pick Image from Camera",
+                //         style: TextStyle(
+                //             color: Colors.white70, fontWeight: FontWeight.bold
+                //         )
+                //     ),
+                //     onPressed: () {
+                //       //pickImage();
+                //     }
+                // ),
+                Container(
+                  height: 200,
+                  width: 300,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
                   ),
-                )
-              ),
-              MaterialButton(
-                  color: Colors.blue,
-                  child: const Text(
-                      "Diagnose Injury",
-                      style: TextStyle(
-                          color: Colors.white70, fontWeight: FontWeight.bold
-                      )
-                  ),
-                  onPressed: geminiFunctionCalling
-              ),
-              diagnosis != '' ?
-                  Center(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 30,),
-                        Text('Diagnosis: $diagnosis'),
-                        SizedBox(height: 20,),
-                        Text('AdviceL $advice')
-                      ],
+                  child: _image != null
+                    ? Image.file(
+                    _image!.absolute,
+                    fit: BoxFit.cover,
+                    )
+                    : Center(
+                    child: Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 30,
                     ),
                   )
-              : diagnoseButtonClicked == 0 ?
-                  Container() :
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 30,),
-                    CircularProgressIndicator()],
                 ),
-              )
-            ],
+                MaterialButton(
+                    color: Colors.blue,
+                    child: const Text(
+                        "Diagnose Injury",
+                        style: TextStyle(
+                            color: Colors.white70, fontWeight: FontWeight.bold
+                        )
+                    ),
+                    onPressed: geminiFunctionCalling
+                ),
+                diagnosis != '' ?
+                    Center(
+                      child: Column(
+                        children: [
+                          SizedBox(height: 30,),
+                          Text('Diagnosis: $diagnosis'),
+                          SizedBox(height: 20,),
+                          Text('Advice $advice')
+                        ],
+                      ),
+                    )
+                : diagnoseButtonClicked == 0 ?
+                    Container() :
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 30,),
+                      CircularProgressIndicator()],
+                  ),
+                )
+              ],
+            ),
           ),
         )
     );
