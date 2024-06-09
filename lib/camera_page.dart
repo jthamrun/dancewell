@@ -156,7 +156,8 @@ class _CameraPageState extends State<CameraPage> {
 
   void getAdvice() async {
     final prompt = TextPart(
-        "Suggest treatment plan or an advice based on this info $diagnosis"
+        "You have previously assessed my injury. Here is the info: $diagnosis"
+            "Give me some advice on how I can alleviate my injury."
       //'Return the assessment and advice in a JSON object. The length of the assessment should be 100 words and advice should be 150 words.'
       // "DO NOT type anything at the beginning or end of the json. The json should look like {'assessment': <assessment>, 'advice': <advice>}"
       //"Please only return the result in a JSON object like this {'diagnosis': 'diagnosis': <diagnosis>, 'advice': <advice>}"
@@ -172,7 +173,7 @@ class _CameraPageState extends State<CameraPage> {
 
       if (response != null) {
         textResponse = response.text!;
-        print(textResponse);
+        //print(textResponse);
         setState(() {
           advice = textResponse;
         });
@@ -248,13 +249,24 @@ class _CameraPageState extends State<CameraPage> {
                     onPressed: geminiFunctionCalling
                 ),
                 diagnosis != '' ?
-                    Center(
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10.0),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 30,),
-                          Text('Diagnosis: $diagnosis'),
-                          SizedBox(height: 20,),
-                          Text('Advice $advice')
+                          Text("Diagnosis",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 5,),
+                          Text(diagnosis),
+                          SizedBox(height: 30,),
+                          Text("Advice",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 5,),
+                          Text(advice)
                         ],
                       ),
                     )
